@@ -6,7 +6,17 @@ app.use(express.json())
 
 const projects = []
 
-app.get('/projects', function(request, response){
+function logRoutes(request, response, next){
+    // console.log(request)
+    const { method, url } = request
+    const route = `[${method.toUpperCase()}] ${url}`
+    console.log(route)
+    return next()
+}
+
+// app.use(logRoutes)
+
+app.get('/projects', logRoutes , function(request, response){
 
     return response.json(projects)
 })
@@ -50,10 +60,17 @@ app.put('/projects/:id', function(request, response){
 })
 
 app.delete('/projects/:id', function(request, response){
-    return response.json([
-        'Projeto 2',
-        'Projeto 3'
-    ])
+    const {id} = request.params
+
+    const projectIndex = projects.findIndex(p=> p.id === id)
+
+    if (projectIndex < 0){
+        return response.status(404).json({ error: 'Project not found'})
+    }
+
+    projects.splice(projectIndex, 1)
+
+    return response.status(204).send()
 })
 
 app.listen(3000, () => {
